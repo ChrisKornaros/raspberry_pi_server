@@ -9,16 +9,19 @@ This guide provides step-by-step instructions and explanations for configuring a
 ## **1. Initial Setup**
 ### **Hardware Requirements**
 - Raspberry Pi 4
+- Micro HDMI to HDMI cord (for direct access)
+- Keyboard (connected via USB for direct access)
 - 1TB Samsung T7 SSD (connected via USB)
 - Amazon Basics 128GB microSD card (or other microSD cards for boot media)
 - SSH-capable devices for headless access
 
 ### **Installing Linux Server LTS on the SSD**
 1. **Prepare the SSD:**
-   - Flash the Linux Server LTS image onto the SSD using tools like `balenaEtcher` or `dd`.
+   - Flash the Linux Server LTS image onto the SSD using tools like `balenaEtcher`, `dd`, or `rpi-imager`.
 2. **Boot from the SSD:**
-   - Remove the microSD card and reboot the Raspberry Pi.
-   - Confirm successful boot by connecting via SSH.
+   - Connect the SSD to the Raspberry Pi.
+   - Connect the Raspberry Pi to the power source.
+   - Connect via SSH on your home network
 
 ---
 
