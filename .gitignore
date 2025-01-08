@@ -4,7 +4,10 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # Files added by Chris
+# HTML are generated when previewing Quarto files, _files are similar files for that purpose
 images/
+*.html
+*_files
 
 # User-specific files
 *.rsuser
