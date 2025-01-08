@@ -54,30 +54,60 @@ BACKUP_DIR="/mnt/backup/configs/$TIMESTAMP"
 mkdir -p "$BACKUP_DIR"
 
 # 1. User and Group Information
-sudo rsync -av /etc/passwd "$BACKUP_DIR/passwd.bak"
-sudo rsync -av /etc/group "$BACKUP_DIR/group.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/passwd "$BACKUP_DIR/passwd.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/group "$BACKUP_DIR/group.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/shadow "$BACKUP_DIR/shadow.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/gshadow "$BACKUP_DIR/gshadow.bak"
 
 # 2. Crontab Configurations
-sudo rsync -av /etc/crontab "$BACKUP_DIR/"
-sudo rsync -avR /var/spool/cron/crontabs/. "$BACKUP_DIR/crontabs/"
+sudo rsync -av --exclude="/mnt/*" /etc/crontab "$BACKUP_DIR/"
+sudo rsync -avR --exclude="/mnt/*" /var/spool/cron/crontabs/. "$BACKUP_DIR/crontabs/"
 
 # 3. SSH Configuration
-sudo rsync -av /etc/ssh/. "$BACKUP_DIR/ssh/"
-rsync -av ~/.ssh/. "$BACKUP_DIR/user_ssh/"
+sudo rsync -av --exclude="/mnt/*" /etc/ssh/. "$BACKUP_DIR/ssh/"
+rsync -av --exclude="/mnt/*" ~/.ssh/. "$BACKUP_DIR/user_ssh/"
 
 # 4. UFW (Uncomplicated Firewall) Configuration
-sudo rsync -av /etc/ufw/. "$BACKUP_DIR/ufw/"
+sudo rsync -av --exclude="/mnt/*" /etc/ufw/. "$BACKUP_DIR/ufw/"
 sudo ufw status verbose > "$BACKUP_DIR/ufw_rules.txt"
 
-# 5. Fail2ban Configuration
-sudo rsync -av /etc/fail2ban/. "$BACKUP_DIR/fail2ban/"
+# 5. Fail2Ban Configuration
+sudo rsync -av --exclude="/mnt/*" /etc/fail2ban/. "$BACKUP_DIR/fail2ban/"
 
-# 6. Package List
+# 6. Network Configuration
+sudo rsync -av --exclude="/mnt/*" /etc/network/. "$BACKUP_DIR/network/"
+sudo rsync -av --exclude="/mnt/*" /etc/hosts "$BACKUP_DIR/hosts.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/hostname "$BACKUP_DIR/hostname.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/resolv.conf "$BACKUP_DIR/resolv.conf.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/wpa_supplicant/wpa_supplicant.conf "$BACKUP_DIR/wpa_supplicant.conf.bak"
+
+# 7. Package Manager Configurations (apt)
+sudo rsync -av --exclude="/mnt/*" /etc/apt/. "$BACKUP_DIR/apt/"
+
+# 8. Systemd Services and Timers
+sudo rsync -av --exclude="/mnt/*" /etc/systemd/system/. "$BACKUP_DIR/systemd/"
+
+# 9. Logrotate Configuration
+sudo rsync -av --exclude="/mnt/*" /etc/logrotate.conf "$BACKUP_DIR/logrotate.conf.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/logrotate.d/. "$BACKUP_DIR/logrotate.d/"
+
+# 10. Custom Application Configurations (add more as needed)
+sudo rsync -av --exclude="/mnt/*" /etc/myapp/. "$BACKUP_DIR/myapp/"
+
+# 11. Timezone and Locale
+sudo rsync -av --exclude="/mnt/*" /etc/timezone "$BACKUP_DIR/timezone.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/localtime "$BACKUP_DIR/localtime.bak"
+sudo rsync -av --exclude="/mnt/*" /etc/default/locale "$BACKUP_DIR/locale.bak"
+
+# 12. Keyboard Configuration
+sudo rsync -av --exclude="/mnt/*" /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
+
+# 13. Package List
 dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
 
 # Set appropriate permissions
-sudo chown -R $(whoami):$(whoami) "$BACKUP_DIR"
-chmod -R 600 "$BACKUP_DIR"  # Restrictive permissions for security
+sudo chown -R chris:chris "$BACKUP_DIR"
+sudo chmod -R 600 "$BACKUP_DIR"
 
 echo "Configuration backup completed at: $BACKUP_DIR"
 EOF
@@ -101,12 +131,11 @@ BACKUP_DIR="/mnt/backup/system/$TIMESTAMP"
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
 
-# 1. Essential System Directories using rsync
 # The --one-file-system option prevents crossing filesystem boundaries
 # --hard-links preserves hard links
 # --acls and --xattrs preserve extended attributes
 sudo rsync -aAXv --one-file-system --hard-links \
-    --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} \
+    --exclude="/mnt/*" \
     / "$BACKUP_DIR"
 
 # 2. System Information Files
@@ -116,8 +145,8 @@ sudo fdisk -l > "$BACKUP_DIR/partition_layout.txt"
 sudo blkid > "$BACKUP_DIR/disk_uuids.txt"
 
 # Set appropriate permissions
-sudo chown -R $(whoami):$(whoami) "$BACKUP_DIR"
-chmod -R 600 "$BACKUP_DIR"
+sudo chown -R chris:chris "$BACKUP_DIR"
+sudo chmod -R 600 "$BACKUP_DIR"
 
 echo "System backup completed at: $BACKUP_DIR"
 EOF
