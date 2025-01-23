@@ -37,83 +37,84 @@ sudo chmod 700 /mnt/backup  # Only owner can read/write/execute
 We'll use rsync to create a structured backup of essential configuration files. The following script demonstrates how to perform the backup while preserving all file attributes:
 
 ```bash
-# Create timestamp for backup naming
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-
-# Create backup directories
-mkdir -p /mnt/backup/configs/$TIMESTAMP
-
-# Create a backup script (save as backup-configs.sh)
-cat << 'EOF' > /mnt/backup/backup-configs.sh
 #!/bin/bash
+# Using the {} around DATEYMD in the file path ensure it's specified as the variable's value, and the subsequent parts are not included
 
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/mnt/backup/configs/$TIMESTAMP"
+DATEYMD=$(date +%Y%m%d)
+BACKUP_DIR="/mnt/backup/configs/$DATEYMD"
+LOG_DIR="/mnt/backup/logs"
+LOG_FILE="$LOG_DIR/${DATEYMD}_config_backup.log"
 
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
 
-# 1. User and Group Information
-sudo rsync -av --exclude="/mnt/*" /etc/passwd "$BACKUP_DIR/passwd.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/group "$BACKUP_DIR/group.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/shadow "$BACKUP_DIR/shadow.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/gshadow "$BACKUP_DIR/gshadow.bak"
+{
+    # 1. User and Group Information
+    sudo rsync -aAXv /etc/passwd "$BACKUP_DIR/passwd.bak"
+    sudo rsync -aAXv /etc/group "$BACKUP_DIR/group.bak"
+    sudo rsync -aAXv /etc/shadow "$BACKUP_DIR/shadow.bak"
+    sudo rsync -aAXv /etc/gshadow "$BACKUP_DIR/gshadow.bak"
 
-# 2. Crontab Configurations
-sudo rsync -av --exclude="/mnt/*" /etc/crontab "$BACKUP_DIR/"
-sudo rsync -avR --exclude="/mnt/*" /var/spool/cron/crontabs/. "$BACKUP_DIR/crontabs/"
+    # 2. Crontab Configurations
+    sudo rsync -aAXv /etc/crontab "$BACKUP_DIR/"
+    sudo rsync -aAXv /var/spool/cron/crontabs/. "$BACKUP_DIR/crontabs/"
 
-# 3. SSH Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/ssh/. "$BACKUP_DIR/ssh/"
-rsync -av --exclude="/mnt/*" ~/.ssh/. "$BACKUP_DIR/user_ssh/"
+    # 3. SSH Configuration
+    sudo rsync -aAXv /etc/ssh/. "$BACKUP_DIR/ssh/"
+    sudo rsync -aAXv ~/.ssh/. "$BACKUP_DIR/user_ssh/"
 
-# 4. UFW (Uncomplicated Firewall) Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/ufw/. "$BACKUP_DIR/ufw/"
-sudo ufw status verbose > "$BACKUP_DIR/ufw_rules.txt"
+    # 4. UFW (Uncomplicated Firewall) Configuration
+    sudo rsync -aAXv /etc/ufw/. "$BACKUP_DIR/ufw/"
+    sudo ufw status verbose > "$BACKUP_DIR/ufw_rules.txt"
 
-# 5. Fail2Ban Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/fail2ban/. "$BACKUP_DIR/fail2ban/"
+    # 5. Fail2Ban Configuration
+    sudo rsync -aAXv /etc/fail2ban/. "$BACKUP_DIR/fail2ban/"
 
-# 6. Network Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/network/. "$BACKUP_DIR/network/"
-sudo rsync -av --exclude="/mnt/*" /etc/hosts "$BACKUP_DIR/hosts.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/hostname "$BACKUP_DIR/hostname.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/resolv.conf "$BACKUP_DIR/resolv.conf.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/wpa_supplicant/wpa_supplicant.conf "$BACKUP_DIR/wpa_supplicant.conf.bak"
+    # 6. Network Configuration
+    sudo rsync -aAXv /etc/network/. "$BACKUP_DIR/network/"
+    sudo rsync -aAXv /etc/hosts "$BACKUP_DIR/hosts.bak"
+    sudo rsync -aAXv /etc/hostname "$BACKUP_DIR/hostname.bak"
+    sudo rsync -aAXv /etc/resolv.conf "$BACKUP_DIR/resolv.conf.bak"
+    sudo rsync -aAXv /etc/wpa_supplicant/wpa_supplicant.conf "$BACKUP_DIR/wpa_supplicant.conf.bak"
 
-# 7. Package Manager Configurations (apt)
-sudo rsync -av --exclude="/mnt/*" /etc/apt/. "$BACKUP_DIR/apt/"
+    # 7. Package Manager Configurations (apt)
+    sudo rsync -aAXv /etc/apt/. "$BACKUP_DIR/apt/"
 
-# 8. Systemd Services and Timers
-sudo rsync -av --exclude="/mnt/*" /etc/systemd/system/. "$BACKUP_DIR/systemd/"
+    # 8. Systemd Services and Timers
+    sudo rsync -aAXv /etc/systemd/system/. "$BACKUP_DIR/systemd/"
 
-# 9. Logrotate Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/logrotate.conf "$BACKUP_DIR/logrotate.conf.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/logrotate.d/. "$BACKUP_DIR/logrotate.d/"
+    # 9. Logrotate Configuration
+    sudo rsync -aAXv /etc/logrotate.conf "$BACKUP_DIR/logrotate.conf.bak"
+    sudo rsync -aAXv /etc/logrotate.d/. "$BACKUP_DIR/logrotate.d/"
 
-# 10. Custom Application Configurations (add more as needed)
-sudo rsync -av --exclude="/mnt/*" /etc/myapp/. "$BACKUP_DIR/myapp/"
+    # 10. Custom Application Configurations (add more as needed)
+    sudo rsync -aAXv /etc/myapp/. "$BACKUP_DIR/myapp/"
 
-# 11. Timezone and Locale
-sudo rsync -av --exclude="/mnt/*" /etc/timezone "$BACKUP_DIR/timezone.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/localtime "$BACKUP_DIR/localtime.bak"
-sudo rsync -av --exclude="/mnt/*" /etc/default/locale "$BACKUP_DIR/locale.bak"
+    # 11. Timezone and Locale
+    sudo rsync -aAXv /etc/timezone "$BACKUP_DIR/timezone.bak"
+    sudo rsync -aAXv /etc/localtime "$BACKUP_DIR/localtime.bak"
+    sudo rsync -aAXv /etc/default/locale "$BACKUP_DIR/locale.bak"
 
-# 12. Keyboard Configuration
-sudo rsync -av --exclude="/mnt/*" /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
+    # 12. Keyboard Configuration
+    sudo rsync -aAXv /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
 
-# 13. Package List
-dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
+    # 13. Package List
+    dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
 
-# Set appropriate permissions
-sudo chown -R chris:chris "$BACKUP_DIR"
-sudo chmod -R 600 "$BACKUP_DIR"
+    # Set appropriate permissions
+    sudo chown -R chris:chris "$BACKUP_DIR"
+    sudo chmod -R 600 "$BACKUP_DIR"
 
-echo "Configuration backup completed at: $BACKUP_DIR"
-EOF
+    echo "Configuration backup completed at: $BACKUP_DIR"
 
+} > "$LOG_FILE" 2>&1
+
+echo "Logs available at: $LOG_FILE"
+```
+
+```bash
 # Make the script executable
-chmod +x /mnt/backup/backup-configs.sh
+chmod +x /scripts/config_backup.sh
 ```
 
 ## System Files Backup
@@ -121,38 +122,50 @@ chmod +x /mnt/backup/backup-configs.sh
 For system files, we'll create a separate rsync script that handles system directories efficiently:
 
 ```bash
-# Create a system backup script (save as backup-system.sh)
-cat << 'EOF' > /mnt/backup/backup-system.sh
 #!/bin/bash
 
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/mnt/backup/system/$TIMESTAMP"
+DATEYMD=$(date +%Y%m%d)
+BACKUP_DIR="/mnt/backup/system/$DATEYMD"
+LOG_DIR="/mnt/backup/logs"
+LOG_FILE="$LOG_DIR/${DATEYMD}_system_backup.log"
+
+
 
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
 
-# The --one-file-system option prevents crossing filesystem boundaries
-# --hard-links preserves hard links
-# --acls and --xattrs preserve extended attributes
-sudo rsync -aAXv --one-file-system --hard-links \
-    --exclude="/mnt/*" \
-    / "$BACKUP_DIR"
+{
+    # Starting script
+    echo "Starting system backup at: $(date)"
+    echo "Backup directory: $BACKUP_DIR"
 
-# 2. System Information Files
-# Partition layout
-sudo fdisk -l > "$BACKUP_DIR/partition_layout.txt"
-# Disk UUIDs
-sudo blkid > "$BACKUP_DIR/disk_uuids.txt"
+    # The --one-file-system option prevents crossing filesystem boundaries
+    # --hard-links preserves hard links
+    # --acls and --xattrs preserve extended attributes
+    sudo rsync -aAXv --one-file-system --hard-links \
+        --exclude="/mnt/" \
+        / "$BACKUP_DIR"
 
-# Set appropriate permissions
-sudo chown -R chris:chris "$BACKUP_DIR"
-sudo chmod -R 600 "$BACKUP_DIR"
+    # 2. System Information Files
+    # Partition layout
+    sudo fdisk -l > "$BACKUP_DIR/partition_layout.txt"
+    # Disk UUIDs
+    sudo blkid > "$BACKUP_DIR/disk_uuids.txt"
 
-echo "System backup completed at: $BACKUP_DIR"
-EOF
+    # Set appropriate permissions
+    sudo chown -R chris:chris "$BACKUP_DIR"
+    sudo chmod -R 600 "$BACKUP_DIR"
 
+    echo "System backup completed at: $BACKUP_DIR."
+
+} > "$LOG_FILE" 2>&1
+
+echo "Logs available at: $LOG_FILE"
+```
+
+```bash
 # Make the script executable
-chmod +x /mnt/backup/backup-system.sh
+chmod +x /scripts/system_backup.sh
 ```
 
 ## Understanding the rsync Options
@@ -166,6 +179,9 @@ The rsync commands use several important options:
 - `--one-file-system`: Don't cross filesystem boundaries
 - `--hard-links`: Preserve hard links
 - `--exclude`: Skip specified directories
+
+## **Note:**
+**Everything up until this point has been tested and works-- relatively efficiently for such a simple setup. That being said, I still haven't tested the restore script, nor have I tried to setup simple cron jobs to automate and cleanup the backups.**
 
 ## Restoring from Backup
 
