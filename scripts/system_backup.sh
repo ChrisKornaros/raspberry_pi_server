@@ -1,8 +1,8 @@
 #!/bin/bash
 
 DATEYMD=$(date +%Y%m%d)
-BACKUP_DIR="/mnt/backup/system/$DATEYMD"
-LOG_DIR="/mnt/backup/logs"
+BACKUP_DIR="/mnt/backups/system/$DATEYMD"
+LOG_DIR="/mnt/backups/logs"
 LOG_FILE="$LOG_DIR/${DATEYMD}_system_backup.log"
 
 

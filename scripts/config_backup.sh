@@ -2,8 +2,8 @@
 # Using the {} around DATEYMD in the file path ensure it's specified as the variable's value, and the subsequent parts are not included
 
 DATEYMD=$(date +%Y%m%d)
-BACKUP_DIR="/mnt/backup/configs/$DATEYMD"
-LOG_DIR="/mnt/backup/logs"
+BACKUP_DIR="/mnt/backups/configs/$DATEYMD"
+LOG_DIR="/mnt/backups/logs"
 LOG_FILE="$LOG_DIR/${DATEYMD}_config_backup.log"
 
 # Create backup directory
