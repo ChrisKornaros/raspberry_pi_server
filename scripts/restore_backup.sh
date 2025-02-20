@@ -30,6 +30,7 @@ mkdir -p "$LOG_DIR"
     if [ -z "$(ls -A $BACKUP_DIR)" ]; then
         echo "Error: Backup directory is empty"
         exit 1
+    fi
 
     echo "Warning: This will overwrite current system files."
     echo "Please type 'yes' to continue:"
