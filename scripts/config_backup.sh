@@ -33,6 +33,8 @@ mkdir -p "$BACKUP_DIR"
 
     # 6. Network Configuration
     sudo rsync -aAXv /etc/network/. "$BACKUP_DIR/network/"
+    sudo rsync -aAXv /etc/netplan/. "$BACKUP_DIR/netplan/"
+    sudo rsync -aAXv /etc/NetworkManager/. "$BACKUP_DIR/NetworkManager/"
     sudo rsync -aAXv /etc/hosts "$BACKUP_DIR/hosts.bak"
     sudo rsync -aAXv /etc/hostname "$BACKUP_DIR/hostname.bak"
     sudo rsync -aAXv /etc/resolv.conf "$BACKUP_DIR/resolv.conf.bak"
@@ -48,18 +50,15 @@ mkdir -p "$BACKUP_DIR"
     sudo rsync -aAXv /etc/logrotate.conf "$BACKUP_DIR/logrotate.conf.bak"
     sudo rsync -aAXv /etc/logrotate.d/. "$BACKUP_DIR/logrotate.d/"
 
-    # 10. Custom Application Configurations (add more as needed)
-    sudo rsync -aAXv /etc/myapp/. "$BACKUP_DIR/myapp/"
-
-    # 11. Timezone and Locale
+    # 10. Timezone and Locale
     sudo rsync -aAXv /etc/timezone "$BACKUP_DIR/timezone.bak"
     sudo rsync -aAXv /etc/localtime "$BACKUP_DIR/localtime.bak"
     sudo rsync -aAXv /etc/default/locale "$BACKUP_DIR/locale.bak"
 
-    # 12. Keyboard Configuration
+    # 11. Keyboard Configuration
     sudo rsync -aAXv /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
 
-    # 13. Package List
+    # 12. Package List
     dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
 
     # Set appropriate permissions
