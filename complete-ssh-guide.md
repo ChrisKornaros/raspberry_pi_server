@@ -181,6 +181,49 @@ ssh-keygen -R ubuntu-pi-server
 ssh-keygen -H -f ~/.ssh/known_hosts
 ```
 
+#### Securing the Key File
+
+When using SSH key-based authentication, adding a password to your key enhances security by requiring a passphrase to use the key. This guide explains how to add and remove a password from an existing SSH key.
+
+**Adding a Password to an SSH Key**
+
+If you already have an SSH key and want to add a password to it, use the following command:
+
+```sh
+ssh-keygen -p -f ~/.ssh/id_rsa
+```
+
+Explanation:
+
+    -p : Prompts for changing the passphrase.
+    -f ~/.ssh/id_rsa : Specifies the key file to modify (adjust if your key has a different name).
+    You will be asked for the current passphrase (leave blank if none) and then set a new passphrase.
+
+**Removing a Password from an SSH Key**
+
+If you want to remove the passphrase from an SSH key, run:
+
+```bash
+ssh-keygen -p -f ~/.ssh/id_rsa -N ""
+```
+
+Explanation:
+
+    -N "" : Sets an empty passphrase (removes the password).
+    The tool will ask for the current passphrase before removing it.
+
+Verifying the Changes
+
+After modifying the key, test the SSH connection from your CLI, or using an SSH tunnel.
+
+```bash
+ssh -i ~/.ssh/id_rsa user@your-server
+```
+
+If you added a passphrase, you'll be prompted to enter it when connecting.
+
+By using a passphrase, your SSH key is protected against unauthorized use in case it gets compromised. If you frequently use your SSH key, consider using an SSH agent (ssh-agent) to cache your passphrase securely.
+
 ### Additional Security Measures
 
 #### Firewall Configuration
@@ -194,6 +237,19 @@ sudo ufw allow ssh
 
 # Enable the firewall
 sudo ufw enable
+```
+
+Now, you'll want to add rules for example, allowing traffic on a specific port if you took the step to choose a nonstandard, one that isn't the default **Port 22**. 
+
+```bash
+# Add a new rule in the port/protocol format
+sudo ufw add 6025/tcp
+
+# See a list of all rules
+sudo ufw status numbered
+
+# Remove the default rules
+sudo ufw delete 1
 ```
 
 #### Fail2Ban
@@ -274,6 +330,69 @@ ssh-keygen -l -f /etc/ssh/ssh_host_ecdsa_key.pub
 ```
 
 Remember: When you see a host key verification prompt, always verify the fingerprint matches your server's key before accepting.
+
+### Using SCP to transfer files
+This document outlines the process of securely copying Bash scripts from an Ubuntu Pi Server to a MacBook Air using SCP (Secure Copy Protocol), a file transfer tool built on top of SSH. The user should have an SSH configuration file (`~/.ssh/config`) set up to simplify connections to their Raspberry Pi server.
+
+#### Ensure the SSH Configuration Works
+
+Initially, the `ssh ubuntu-pi-server` command did not use the expected user-specific SSH configuration (`~/.ssh/config`). Instead, it defaulted to the system-wide configuration (`/etc/ssh/ssh_config`).To fix this, I ran the command with the `-F` flag explicitly specifying the user config:
+
+```bash
+ssh -F ~/.ssh/config ubuntu-pi-server
+```
+
+**Note:** To make sure SSH always uses the correct config, I tried the following:
+
+- Made sure `~/.ssh/config` exists and has the correct permissions (`chmod 600 ~/.ssh/config`).
+- Modified the `/etc/ssh/ssh_config` to include the user config:
+```plaintext
+Include ~/.ssh/config
+```
+
+After fixing the issue, the command `ssh ubuntu-pi-server` worked as expected.
+
+#### Copying Scripts from Server to MacBook Air
+Once SSH was working correctly, the next step was to copy two Bash scripts from the Ubuntu Pi Server to the MacBook Air using `scp`.
+
+The scripts were stored on the Pi as:
+
+```plaintext
+/home/chris/scripts/system_backup.sh
+/home/chris/scripts/config_backup.sh
+```
+
+The following `scp` commands were used to transfer them to the MacBook Air:
+
+```bash
+scp ubuntu-pi-server:~/scripts/backup.sh ~/Documents/pi-scripts/
+scp ubuntu-pi-server:~/scripts/maintenance.sh ~/Documents/pi-scripts/
+```
+
+#### Copying Multiple Files at Once
+To copy all Bash scripts from the `scripts` directory in one command:
+
+```bash
+scp ubuntu-pi-server:~/scripts/*.sh ~/Documents/pi-scripts/
+```
+
+#### Copying Files from MacBook Air to Server
+Simply enter the command in reverse, but notice here I did things a little differently.
+
+- `-r` tells `scp` to *recursively* copy a directory, meaning it moves it and all of its contents
+- `chris@` tells `scp` to specify the user when connecting to the server, this can be helpful if you have connection issues
+
+```bash
+scp -r ~/Documents/pi-scripts chris@ubuntu-pi-server:~/scripts
+```
+
+#### SCP Notes
+
+- SSH is now correctly configured and working using `ssh ubuntu-pi-server`.
+- Bash scripts can be securely copied from the Ubuntu Pi Server to the MacBook Air using `scp`.
+  - Just take note of the specific syntax used, namely `server-name:path/to/files`
+- The user can now maintain local backups of important scripts efficiently.
+  - Enables you to develop where you'd like and then easily move files to test scripts
 
 ## Conclusion
 

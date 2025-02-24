@@ -29,7 +29,7 @@ sudo mkdir -p /mnt/backup/system
 sudo chown -R chris:chris /mnt/backup
 
 # Set appropriate permissions
-sudo chmod 700 /mnt/backup  # Only owner can read/write/execute
+sudo chmod -R 700 /mnt/backup  # Only owner can read/write/execute
 ```
 
 ## Configuration Files Backup
