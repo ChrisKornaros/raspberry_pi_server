@@ -44,7 +44,7 @@ fi
 
 # Set up our variables
 BACKUP_DIR=$1
-LOG_DIR="/mnt/backup/logs"
+LOG_DIR="/mnt/backups/logs"
 DATEYMD=$(date +%Y%m%d)
 LOG_FILE="$LOG_DIR/${DATEYMD}_restore.log"
 
