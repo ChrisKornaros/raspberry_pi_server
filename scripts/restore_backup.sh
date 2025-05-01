@@ -3,18 +3,18 @@
 # Function to ensure we can always execute essential commands
 preserve_critical_permissions() {
     # Ensure critical system directories maintain correct permissions
-    sudo chmod 755 /
-    sudo chmod 755 /usr
-    sudo chmod 755 /usr/bin
-    sudo chmod 755 /bin
-    sudo chmod 755 /sbin
-    sudo chmod 755 /usr/sbin
+    sudo chmod --preserve-root 755 /
+    sudo chmod --preserve-root 755 /usr
+    sudo chmod --preserve-root 755 /usr/bin
+    sudo chmod --preserve-root 755 /bin
+    sudo chmod --preserve-root 755 /sbin
+    sudo chmod --preserve-root 755 /usr/sbin
     
     # Ensure critical commands remain executable
-    sudo chmod 755 /usr/bin/sudo
-    sudo chmod 755 /bin/bash
-    sudo chmod 755 /bin/chmod
-    sudo chmod 755 /bin/ls
+    sudo chmod --preserve-root 755 /usr/bin/sudo
+    sudo chmod --preserve-root 755 /bin/bash
+    sudo chmod --preserve-root 755 /bin/chmod
+    sudo chmod --preserve-root 755 /bin/ls
 }
 
 # Function to verify system accessibility after restore
