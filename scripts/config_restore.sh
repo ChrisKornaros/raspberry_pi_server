@@ -1,95 +1,77 @@
 #!/bin/bash
 
-# Variables
-BACKUP_DIR="/mnt/backups/configs/$1"
-LOG_DIR="/mnt/backups/logs"
-LOG_FILE="$LOG_DIR/${1}_config_restore.log"
+# Simple Configuration Restoration Script for Ubuntu Pi Server
+BACKUP_DIR=${1:-"/mnt/backups/configs/master"}
 
-# Check if backup directory exists
-if [ ! -d "$BACKUP_DIR" ]; then
-    echo "Backup directory $BACKUP_DIR does not exist. Exiting."
+# Check if script is run as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root. Try using sudo."
     exit 1
 fi
 
-# Restore function
-restore_file() {
-    local src="$1"
-    local dest="$2"
-    local owner="$3"
-    local perms="$4"
+# Check if the backup directory exists
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "Error: Backup directory not found: $BACKUP_DIR"
+    echo "Usage: $0 [backup_directory_path]"
+    exit 1
+fi
 
-    if [ -f "$src" ] || [ -d "$src" ]; then
-        sudo rsync -aAXv "$src" "$dest"
-        sudo chown "$owner" "$dest"
-        sudo chmod "$perms" "$dest"
-        echo "Restored $src to $dest with owner $owner and permissions $perms"
-    else
-        echo "Source $src does not exist. Skipping."
-    fi
-}
+# Begin restoration process
+echo "Starting configuration restoration from $BACKUP_DIR..."
+echo "This will overwrite current system configurations with those from the backup."
+read -p "Continue with restoration? (y/n): " CONFIRM
+if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+    echo "Restoration aborted by user."
+    exit 0
+fi
 
-# Start restoration
-{
-    echo "Starting restoration from $BACKUP_DIR"
+# 1. Restore User and Group Information
+echo "Restoring user and group information..."
+[ -f "$BACKUP_DIR/passwd.bak" ] && rsync -a "$BACKUP_DIR/passwd.bak" /etc/passwd
+[ -f "$BACKUP_DIR/group.bak" ] && rsync -a "$BACKUP_DIR/group.bak" /etc/group
+[ -f "$BACKUP_DIR/shadow.bak" ] && rsync -a "$BACKUP_DIR/shadow.bak" /etc/shadow
+[ -f "$BACKUP_DIR/gshadow.bak" ] && rsync -a "$BACKUP_DIR/gshadow.bak" /etc/gshadow
 
-    # 1. User and Group Information
-    restore_file "$BACKUP_DIR/passwd.bak" /etc/passwd root:root 644
-    restore_file "$BACKUP_DIR/group.bak" /etc/group root:root 644
-    restore_file "$BACKUP_DIR/shadow.bak" /etc/shadow root:shadow 640
-    restore_file "$BACKUP_DIR/gshadow.bak" /etc/gshadow root:shadow 640
+# 2. Restore SSH Configuration
+echo "Restoring SSH configuration..."
+[ -d "$BACKUP_DIR/ssh" ] && rsync -a "$BACKUP_DIR/ssh/" /etc/ssh/
+chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
 
-    # 2. Crontab Configurations
-    restore_file "$BACKUP_DIR/crontab" /etc/crontab root:root 644
-    restore_file "$BACKUP_DIR/crontabs/" /var/spool/cron/crontabs/ root:crontab 700
+# 3. Restore UFW Configuration
+echo "Restoring UFW configuration..."
+if [ -d "$BACKUP_DIR/ufw" ]; then
+    apt-get install -y ufw >/dev/null
+    rsync -a "$BACKUP_DIR/ufw/" /etc/ufw/
+fi
 
-    # 3. SSH Configuration
-    restore_file "$BACKUP_DIR/ssh/" /etc/ssh/ root:root 700
-    restore_file "$BACKUP_DIR/user_ssh/" ~/.ssh/ "$USER:$USER" 700
+# 4. Restore Fail2Ban Configuration
+echo "Restoring Fail2Ban configuration..."
+if [ -d "$BACKUP_DIR/fail2ban" ]; then
+    apt-get install -y fail2ban >/dev/null
+    rsync -a "$BACKUP_DIR/fail2ban/" /etc/fail2ban/
+fi
 
-    # 4. UFW Configuration
-    restore_file "$BACKUP_DIR/ufw/" /etc/ufw/ root:root 700
+# 5. Restore Network Configuration
+echo "Restoring network configuration..."
+[ -d "$BACKUP_DIR/network" ] && rsync -a "$BACKUP_DIR/network/" /etc/network/
+[ -d "$BACKUP_DIR/netplan" ] && rsync -a "$BACKUP_DIR/netplan/" /etc/netplan/
+[ -f "$BACKUP_DIR/hosts.bak" ] && rsync -a "$BACKUP_DIR/hosts.bak" /etc/hosts
+[ -f "$BACKUP_DIR/hostname.bak" ] && rsync -a "$BACKUP_DIR/hostname.bak" /etc/hostname
 
-    # 5. Fail2Ban Configuration
-    restore_file "$BACKUP_DIR/fail2ban/" /etc/fail2ban/ root:root 700
+# 6. Restore Package List
+#echo "Reinstalling packages from backup..."
+#if [ -f "$BACKUP_DIR/package_list.txt" ]; then
+#    apt-get update && apt-get install -y dselect
+#    dpkg --set-selections < "$BACKUP_DIR/package_list.txt"
+#    apt-get dselect-upgrade -y
+#fi
 
-    # 6. Network Configuration
-    restore_file "$BACKUP_DIR/network/" /etc/network/ root:root 700
-    restore_file "$BACKUP_DIR/netplan/" /etc/netplan/ root:root 700
-    restore_file "$BACKUP_DIR/NetworkManager/" /etc/NetworkManager/ root:root 700
-    restore_file "$BACKUP_DIR/hosts.bak" /etc/hosts root:root 644
-    restore_file "$BACKUP_DIR/hostname.bak" /etc/hostname root:root 644
-    restore_file "$BACKUP_DIR/resolv.conf.bak" /etc/resolv.conf root:root 644
-    restore_file "$BACKUP_DIR/wpa_supplicant.conf.bak" /etc/wpa_supplicant/wpa_supplicant.conf root:root 600
+# Restart services
+systemctl restart ssh ufw fail2ban
 
-    # 7. Package Manager Configurations (apt)
-    restore_file "$BACKUP_DIR/apt/" /etc/apt/ root:root 700
+echo "Configuration restoration completed. A system reboot is recommended."
+read -p "Would you like to reboot now? (y/n): " REBOOT
+[[ "$REBOOT" == "y" || "$REBOOT" == "Y" ]] && reboot
 
-    # 8. Systemd Services and Timers
-    restore_file "$BACKUP_DIR/systemd/" /etc/systemd/system/ root:root 700
-
-    # 9. Logrotate Configuration
-    restore_file "$BACKUP_DIR/logrotate.conf.bak" /etc/logrotate.conf root:root 644
-    restore_file "$BACKUP_DIR/logrotate.d/" /etc/logrotate.d/ root:root 700
-
-    # 10. Timezone and Locale
-    restore_file "$BACKUP_DIR/timezone.bak" /etc/timezone root:root 644
-    restore_file "$BACKUP_DIR/localtime.bak" /etc/localtime root:root 644
-    restore_file "$BACKUP_DIR/locale.bak" /etc/default/locale root:root 644
-
-    # 11. Keyboard Configuration
-    restore_file "$BACKUP_DIR/keyboard.bak" /etc/default/keyboard root:root 644
-
-    # 12. Package List
-    if [ -f "$BACKUP_DIR/package_list.txt" ]; then
-        sudo dpkg --set-selections < "$BACKUP_DIR/package_list.txt"
-        sudo apt-get -y dselect-upgrade
-        echo "Restored package list from $BACKUP_DIR/package_list.txt"
-    else
-        echo "Package list not found. Skipping."
-    fi
-
-    echo "Restoration completed successfully."
-
-} > "$LOG_FILE" 2>&1
-
-echo "Logs available at: $LOG_FILE"
+exit 0
