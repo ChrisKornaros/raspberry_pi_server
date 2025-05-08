@@ -1,0 +1,6 @@
+# Wireless network configuration
+[Match]
+Name=wlan0
+
+[Network]
+DHCP=yes

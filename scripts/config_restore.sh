@@ -55,9 +55,13 @@ fi
 # 5. Restore Network Configuration
 echo "Restoring network configuration..."
 [ -d "$BACKUP_DIR/network" ] && rsync -a "$BACKUP_DIR/network/" /etc/network/
+[ -d "$BACKUP_DIR/systemd_network" ] && rsync -a "$BACKUP_DIR/systemd_network/" /etc/systemd/network/
 [ -d "$BACKUP_DIR/netplan" ] && rsync -a "$BACKUP_DIR/netplan/" /etc/netplan/
 [ -f "$BACKUP_DIR/hosts.bak" ] && rsync -a "$BACKUP_DIR/hosts.bak" /etc/hosts
 [ -f "$BACKUP_DIR/hostname.bak" ] && rsync -a "$BACKUP_DIR/hostname.bak" /etc/hostname
+[ -f "$BACKUP_DIR/resolv.conf.bak" ] && rsync -a "$BACKUP_DIR/resolv.conf.bak" /etc/resolv.conf
+[ -d "$BACKUP_DIR/wpa_supplicant" ] && rsync -a "$BACKUP_DIR/wpa_supplicant/" /etc/wpa_supplicant/
+
 
 # 6. Restore Package List
 #echo "Reinstalling packages from backup..."
@@ -68,7 +72,7 @@ echo "Restoring network configuration..."
 #fi
 
 # Restart services
-systemctl restart ssh ufw fail2ban
+systemctl restart systemd-networkd wpa_supplicant@wlan0.service ssh ufw fail2ban 
 
 echo "Configuration restoration completed. A system reboot is recommended."
 read -p "Would you like to reboot now? (y/n): " REBOOT

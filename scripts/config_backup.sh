@@ -33,33 +33,27 @@ mkdir -p "$BACKUP_DIR"
 
     # 6. Network Configuration
     sudo rsync -aAXv /etc/network/. "$BACKUP_DIR/network/"
+    sudo rsync -aAXV /etc/systemd/network/. "$BACKUP_DIR/systemd_network/"
     sudo rsync -aAXv /etc/netplan/. "$BACKUP_DIR/netplan/"
-    sudo rsync -aAXv /etc/NetworkManager/. "$BACKUP_DIR/NetworkManager/"
     sudo rsync -aAXv /etc/hosts "$BACKUP_DIR/hosts.bak"
     sudo rsync -aAXv /etc/hostname "$BACKUP_DIR/hostname.bak"
     sudo rsync -aAXv /etc/resolv.conf "$BACKUP_DIR/resolv.conf.bak"
-    sudo rsync -aAXv /etc/wpa_supplicant/wpa_supplicant.conf "$BACKUP_DIR/wpa_supplicant.conf.bak"
+    sudo rsync -aAXv /etc/wpa_supplicant/. "$BACKUP_DIR/wpa_supplicant/"
 
-    # 7. Package Manager Configurations (apt)
-    sudo rsync -aAXv /etc/apt/. "$BACKUP_DIR/apt/"
-
-    # 8. Systemd Services and Timers
+    # 7. Systemd Services and Timers
     sudo rsync -aAXv /etc/systemd/system/. "$BACKUP_DIR/systemd/"
 
-    # 9. Logrotate Configuration
+    # 8. Logrotate Configuration
     sudo rsync -aAXv /etc/logrotate.conf "$BACKUP_DIR/logrotate.conf.bak"
     sudo rsync -aAXv /etc/logrotate.d/. "$BACKUP_DIR/logrotate.d/"
 
-    # 10. Timezone and Locale
+    # 9. Timezone and Locale
     sudo rsync -aAXv /etc/timezone "$BACKUP_DIR/timezone.bak"
     sudo rsync -aAXv /etc/localtime "$BACKUP_DIR/localtime.bak"
     sudo rsync -aAXv /etc/default/locale "$BACKUP_DIR/locale.bak"
 
-    # 11. Keyboard Configuration
+    # 10. Keyboard Configuration
     sudo rsync -aAXv /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
-
-    # 12. Package List
-    dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
 
     # Set appropriate permissions
     sudo chown -R chris:chris "$BACKUP_DIR"
