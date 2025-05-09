@@ -69,8 +69,11 @@ echo "Restoring network configuration..."
 [ -f "$BACKUP_DIR/resolv.conf.bak" ] && rsync -a "$BACKUP_DIR/resolv.conf.bak" /etc/resolv.conf
 [ -d "$BACKUP_DIR/wpa_supplicant" ] && rsync -a "$BACKUP_DIR/wpa_supplicant/" /etc/wpa_supplicant/
 
+# 6. Restore Filesystem Table (fstab)
+echo "Restoring filesystem table (fstab)..."
+[ -f "$BACKUP_DIR/fstab.bak" ] && rsync -a "$BACKUP_DIR/fstab.bak" /etc/fstab
 
-# 6. Restore Package List
+# 7. Restore Package List
 #echo "Reinstalling packages from backup..."
 #if [ -f "$BACKUP_DIR/package_list.txt" ]; then
 #    apt-get update && apt-get install -y dselect

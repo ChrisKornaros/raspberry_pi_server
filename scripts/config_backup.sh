@@ -86,6 +86,10 @@ mkdir -p "$BACKUP_DIR"
     echo "Backing up Keyboard configuration..."
     sudo rsync -aAXv /etc/default/keyboard "$BACKUP_DIR/keyboard.bak"
 
+    # 11. Filesystem Table (fstab)
+    echo "Backing up filesystem table (fstab)..."
+    sudo rsync -aAXv /etc/fstab "$BACKUP_DIR/fstab.bak"
+
     # Set appropriate permissions
     echo "Configuring backup directory permissions..."
     sudo chown -R chris:chris "$BACKUP_DIR"
