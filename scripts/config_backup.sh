@@ -6,6 +6,12 @@ BACKUP_DIR="/mnt/backups/configs/$DATEYMD"
 LOG_DIR="/mnt/backups/logs"
 LOG_FILE="$LOG_DIR/${DATEYMD}_config_backup.log"
 
+# Check if script is run as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root. Try using sudo."
+    exit 1
+fi
+
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
 
@@ -30,16 +36,16 @@ mkdir -p "$BACKUP_DIR"
     mkdir -p "$BACKUP_DIR/user_ssh"
     
     # Copy SSH user configuration with explicit handling of authorized_keys
-    rsync -aAXv ~/.ssh/config "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
-    rsync -aAXv ~/.ssh/id_* "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
-    rsync -aAXv ~/.ssh/known_hosts "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
+    rsync -aAXv /home/chris/.ssh/config "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
+    rsync -aAXv /home/chris/.ssh/id_* "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
+    rsync -aAXv /home/chris/.ssh/known_hosts "$BACKUP_DIR/user_ssh/" 2>/dev/null || true
     
     # Explicitly backup authorized_keys if it exists
-    if [ -f ~/.ssh/authorized_keys ]; then
+    if [ -f /home/chris/.ssh/authorized_keys ]; then
         echo "Backing up authorized_keys file..."
-        rsync -aAXv ~/.ssh/authorized_keys "$BACKUP_DIR/user_ssh/"
+        rsync -aAXv /home/chris/.ssh/authorized_keys "$BACKUP_DIR/user_ssh/"
     else
-        echo "No authorized_keys file found in ~/.ssh/"
+        echo "No authorized_keys file found in /home/chris/.ssh/"
     fi
 
     # 4. UFW (Uncomplicated Firewall) Configuration
