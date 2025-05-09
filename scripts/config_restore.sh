@@ -62,7 +62,7 @@ fi
 # 5. Restore Network Configuration
 echo "Restoring network configuration..."
 [ -d "$BACKUP_DIR/network" ] && rsync -a "$BACKUP_DIR/network/" /etc/network/
-[ -d "$BACKUP_DIR/systemd_network" ] && rsync -a "$BACKUP_DIR/systemd_network/" /etc/systemd/network/
+[ -d "$BACKUP_DIR/systemd/network" ] && rsync -a "$BACKUP_DIR/systemd/network/" /etc/systemd/network/
 [ -d "$BACKUP_DIR/netplan" ] && rsync -a "$BACKUP_DIR/netplan/" /etc/netplan/
 [ -f "$BACKUP_DIR/hosts.bak" ] && rsync -a "$BACKUP_DIR/hosts.bak" /etc/hosts
 [ -f "$BACKUP_DIR/hostname.bak" ] && rsync -a "$BACKUP_DIR/hostname.bak" /etc/hostname
