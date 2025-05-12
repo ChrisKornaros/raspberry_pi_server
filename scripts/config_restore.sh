@@ -74,12 +74,11 @@ echo "Restoring filesystem table (fstab)..."
 [ -f "$BACKUP_DIR/fstab.bak" ] && rsync -a "$BACKUP_DIR/fstab.bak" /etc/fstab
 
 # 7. Restore Package List
-#echo "Reinstalling packages from backup..."
-#if [ -f "$BACKUP_DIR/package_list.txt" ]; then
-#    apt-get update && apt-get install -y dselect
-#    dpkg --set-selections < "$BACKUP_DIR/package_list.txt"
-#    apt-get dselect-upgrade -y
-#fi
+echo "Reinstalling packages from backup..."
+if [ -f "$BACKUP_DIR/package_list.txt" ]; then
+    apt-get update && apt-get install -y dselect
+    dpkg --set-selections < "$BACKUP_DIR/package_list.txt"
+    apt-get dselect-upgrade -y
 
 # Restart services
 systemctl restart systemd-networkd wpa_supplicant@wlan0.service ssh ufw fail2ban 

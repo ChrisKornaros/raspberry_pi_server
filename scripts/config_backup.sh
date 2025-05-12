@@ -89,6 +89,10 @@ mkdir -p "$BACKUP_DIR"
     # 11. Filesystem Table (fstab)
     echo "Backing up filesystem table (fstab)..."
     sudo rsync -aAXv /etc/fstab "$BACKUP_DIR/fstab.bak"
+    
+    # 12. Backup Package List
+    echo "Backing up package list..."
+    dpkg --get-selections > "$BACKUP_DIR/package_list.txt"
 
     # Set appropriate permissions
     echo "Configuring backup directory permissions..."
