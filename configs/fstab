@@ -1,0 +1,4 @@
+LABEL=writable	/	ext4	defaults	0	1
+LABEL=system-boot	/boot/firmware	vfat	defaults	0	1
+UUID=4b338cfa-02ab-4e1c-bcc6-1c83fec7d892 /mnt/backups ext4 defaults,noatime 0 2
+UUID=5624f709-7cae-4bfd-81cd-3c8faf147752 / ext4 defaults,noatime,commit=60 0 1
